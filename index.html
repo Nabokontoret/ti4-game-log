@@ -705,7 +705,14 @@
     document.getElementById('s9-table').innerHTML = GAMES.map(g=>{
       const winner = g.winner ? `${esc(g.winner)} <span class="mono" style="color:var(--text-muted);">(${esc(factionById[g.winnerFaction].name)})</span>` :
         (g.status==='in_progress' ? '<span class="mono">in progress</span>' : '<span class="mono">undecided</span>');
-      const code = g.code ? `<span class="mono">${esc(g.code)}</span>` : '<span class="mono" style="color:var(--text-muted);">—</span>';
+      let code;
+      if(!g.code){
+        code = '<span class="mono" style="color:var(--text-muted);">—</span>';
+      } else if(g.code === 'unknown'){
+        code = `<span class="mono" style="color:var(--text-muted);">${esc(g.code)}</span>`;
+      } else {
+        code = `<a class="link mono" href="https://ti4-companion-deploy.vercel.app/g/${esc(g.code)}" target="_blank" rel="noopener">${esc(g.code)}</a>`;
+      }
       const draft = g.draftUrl ? `<a class="link" href="${esc(g.draftUrl)}" target="_blank" rel="noopener">draft ↗</a>` : '<span style="color:var(--text-muted);">—</span>';
       return `<tr>
         <td class="strong mono">${g.id}</td>
