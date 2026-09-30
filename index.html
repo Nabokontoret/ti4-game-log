@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Council Archive</title>
+<meta name="description" content="Win rates, faction popularity, and running feuds from the group's Twilight Imperium campaign, told across nine records you click through.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap">
+
+<style>
+  *{box-sizing:border-box;}
+  img{max-width:100%;}
+  [hidden]{display:none!important;}
+  :root{
+    --surface-1:#fcfcfb;
+    --surface-2:#ffffff;
+    --page-plane:#f9f9f7;
+    --text-primary:#0b0b0b;
+    --text-secondary:#52514e;
+    --text-muted:#898781;
+    --gridline:#e1e0d9;
+    --baseline:#c3c2b7;
+    --border:rgba(11,11,11,0.10);
+    --accent-gold:#8f6209;
+    --accent-teal:#1baf7a;
+    --accent-violet:#4a3aa7;
+    --series-blue:#2a78d6;
+    --series-orange:#eb6834;
+    --status-good:#0ca30c;
+    --status-critical:#d03b3b;
+    --font-display:'Rajdhani',system-ui,-apple-system,"Segoe UI",sans-serif;
+    --font-body:'IBM Plex Sans',system-ui,-apple-system,"Segoe UI",sans-serif;
+    --font-mono:'IBM Plex Mono',ui-monospace,"SFMono-Regular",Menlo,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --surface-1:#1a1a19;
+      --surface-2:#212120;
+      --page-plane:#0d0d0d;
+      --text-primary:#ffffff;
+      --text-secondary:#c3c2b7;
+      --text-muted:#898781;
+      --gridline:#2c2c2a;
+      --baseline:#383835;
+      --border:rgba(255,255,255,0.10);
+      --accent-gold:#e0ab5a;
+      --accent-teal:#199e70;
+      --accent-violet:#9085e9;
+      --series-blue:#3987e5;
+      --series-orange:#d95926;
+    }
+  }
+  :root[data-theme="dark"]{
+    --surface-1:#1a1a19;
+    --surface-2:#212120;
+    --page-plane:#0d0d0d;
+    --text-primary:#ffffff;
+    --text-secondary:#c3c2b7;
+    --text-muted:#898781;
+    --gridline:#2c2c2a;
+    --baseline:#383835;
+    --border:rgba(255,255,255,0.10);
+    --accent-gold:#e0ab5a;
+    --accent-teal:#199e70;
+    --accent-violet:#9085e9;
+    --series-blue:#3987e5;
+    --series-orange:#d95926;
+  }
+
+  html,body{height:100%;}
+  body{
+    background:var(--page-plane);
+    color:var(--text-primary);
+    font-family:var(--font-body);
+    background-image:
+      radial-gradient(1px 1px at 8% 22%, var(--border) 40%, transparent 41%),
+      radial-gradient(1px 1px at 32% 68%, var(--border) 40%, transparent 41%),
+      radial-gradient(1px 1px at 58% 12%, var(--border) 40%, transparent 41%),
+      radial-gradient(1.5px 1.5px at 74% 82%, var(--border) 40%, transparent 41%),
+      radial-gradient(1px 1px at 88% 36%, var(--border) 40%, transparent 41%),
+      radial-gradient(1px 1px at 18% 90%, var(--border) 40%, transparent 41%);
+    background-repeat:no-repeat;
+  }
+  h1,h2,h3{font-family:var(--font-display);font-weight:700;text-wrap:balance;margin:0;}
+  p{margin:0;}
+  .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
+
+  .app{height:100%;display:flex;flex-direction:column;max-width:960px;margin:0 auto;}
+
+  /* ---- topbar ---- */
+  .topbar{
+    padding:14px 20px 10px;
+    display:flex;align-items:baseline;justify-content:space-between;
+    border-bottom:1px solid var(--border);
+    flex-shrink:0;
+  }
+  .brand{
+    font-family:var(--font-display);font-weight:700;font-size:15px;
+    letter-spacing:0.14em;text-transform:uppercase;color:var(--text-primary);
+  }
+  .brand span{color:var(--accent-gold);}
+  .page-indicator{font-family:var(--font-mono);font-size:13px;color:var(--text-muted);letter-spacing:0.04em;}
+  .page-indicator b{color:var(--text-primary);font-weight:600;}
+  .progress-rail{height:2px;background:var(--gridline);flex-shrink:0;}
+  .progress-fill{height:100%;background:var(--accent-gold);width:11.11%;transition:width .45s ease;}
+  @media (prefers-reduced-motion: reduce){ .progress-fill{transition:none;} }
+
+  /* ---- deck / slides ---- */
+  .deck{flex:1;overflow:hidden;position:relative;}
+  .track{display:flex;height:100%;width:100%;transition:transform .45s cubic-bezier(.65,0,.35,1);}
+  @media (prefers-reduced-motion: reduce){ .track{transition:none;} }
+  .slide{
+    flex:0 0 100%;width:100%;height:100%;overflow-y:auto;
+    padding:28px 20px 32px;box-sizing:border-box;
+    display:flex;flex-direction:column;gap:18px;
+  }
+  .kicker{
+    font-family:var(--font-mono);font-size:12px;letter-spacing:0.12em;text-transform:uppercase;
+    color:var(--accent-gold);
+  }
+  .slide-title{font-size:clamp(28px,6vw,40px);line-height:1.05;}
+  .slide-sub{color:var(--text-secondary);font-size:15px;max-width:60ch;}
+
+  /* ---- kpi tiles (slide 1) ---- */
+  .kpi-row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:4px;}
+  @media(min-width:560px){ .kpi-row{grid-template-columns:repeat(4,1fr);} }
+  .kpi-tile{
+    background:var(--surface-1);border:1px solid var(--border);border-radius:10px;
+    padding:16px 14px;display:flex;flex-direction:column;gap:6px;
+  }
+  .kpi-value{font-family:var(--font-display);font-weight:700;font-size:34px;color:var(--accent-gold);line-height:1;}
+  .kpi-label{font-size:12px;color:var(--text-secondary);letter-spacing:0.03em;}
+
+  /* ---- generic card ---- */
+  .card{background:var(--surface-1);border:1px solid var(--border);border-radius:10px;padding:16px 16px;}
+  .callout{
+    background:var(--surface-1);border:1px solid var(--border);border-left:3px solid var(--accent-gold);
+    border-radius:8px;padding:12px 14px;font-size:14px;color:var(--text-secondary);
+  }
+  .callout b{color:var(--text-primary);}
+  .callout.critical{border-left-color:var(--status-critical);}
+  .callout.good{border-left-color:var(--status-good);}
+
+  /* ---- bar chart rows ---- */
+  .bars{display:flex;flex-direction:column;gap:2px;}
+  .bar-row{
+    display:grid;grid-template-columns:minmax(96px,132px) 1fr auto;
+    align-items:center;gap:10px;padding-block:5px;border-radius:6px;
+  }
+  .bar-row:hover{background:var(--surface-2);}
+  .bar-label{font-size:13px;color:var(--text-primary);line-height:1.25;}
+  .bar-sub{display:block;font-size:10.5px;color:var(--text-muted);letter-spacing:0.03em;text-transform:uppercase;}
+  .bar-track{position:relative;height:16px;background:var(--gridline);border-radius:4px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:0 4px 4px 0;min-width:3px;}
+  .bar-value{font-family:var(--font-mono);font-size:13px;color:var(--text-secondary);text-align:right;min-width:2.2em;}
+  .bar-value.win{color:var(--status-good);font-weight:600;}
+
+  /* ---- badges / tags ---- */
+  .tag-row{display:flex;flex-wrap:wrap;gap:6px;}
+  .tag{
+    font-family:var(--font-mono);font-size:11px;padding:3px 8px;border-radius:999px;
+    border:1px solid var(--border);color:var(--text-secondary);white-space:nowrap;
+  }
+  .tag.gold{border-color:transparent;background:color-mix(in srgb, var(--accent-gold) 16%, transparent);color:var(--accent-gold);}
+  .tag.critical{border-color:transparent;background:color-mix(in srgb, var(--status-critical) 14%, transparent);color:var(--status-critical);}
+
+  /* ---- name-list (attendance callouts) ---- */
+  .people{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{
+    display:flex;align-items:center;gap:6px;background:var(--surface-1);border:1px solid var(--border);
+    border-radius:999px;padding:6px 12px 6px 8px;font-size:13px;
+  }
+  .chip .dot-ic{width:8px;height:8px;border-radius:50%;background:var(--accent-teal);flex-shrink:0;}
+  .chip.ghost .dot-ic{background:var(--text-muted);}
+
+  /* ---- hard-luck spotlight ---- */
+  .spotlight{
+    display:flex;flex-direction:column;gap:4px;align-items:flex-start;
+    background:var(--surface-1);border:1px solid var(--border);border-radius:14px;padding:22px 20px;
+  }
+  .spotlight-name{font-family:var(--font-display);font-weight:700;font-size:clamp(32px,9vw,52px);color:var(--status-critical);line-height:1;}
+  .spotlight-stat{font-size:15px;color:var(--text-secondary);}
+  .spotlight-stat b{color:var(--text-primary);font-family:var(--font-mono);}
+
+  table.simple{width:100%;border-collapse:collapse;font-size:13px;}
+  table.simple th{
+    text-align:left;font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:0.04em;
+    color:var(--text-muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--border);
+  }
+  table.simple td{padding:8px 8px;border-bottom:1px solid var(--border);color:var(--text-secondary);vertical-align:top;}
+  table.simple td.strong{color:var(--text-primary);font-weight:600;}
+  table.simple tr:last-child td{border-bottom:none;}
+  .table-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:10px;}
+  .table-scroll table.simple{min-width:640px;}
+  .table-scroll .card{border:none;border-radius:0;}
+  a.link{color:var(--series-blue);text-decoration:none;border-bottom:1px solid color-mix(in srgb, var(--series-blue) 40%, transparent);}
+  a.link:hover{border-bottom-color:var(--series-blue);}
+
+  /* ---- never-drafted cards ---- */
+  .file-grid{display:grid;grid-template-columns:1fr;gap:10px;}
+  @media(min-width:560px){ .file-grid{grid-template-columns:repeat(3,1fr);} }
+  .file-card{
+    background:var(--surface-1);border:1px dashed var(--border);border-radius:10px;padding:14px;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .file-card .fname{font-family:var(--font-display);font-weight:700;font-size:17px;}
+  .file-card .fmeta{font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);}
+  .file-card .fflavor{font-size:12.5px;color:var(--text-secondary);}
+
+  .stack{display:flex;flex-direction:column;gap:14px;}
+
+  /* ---- bottom nav ---- */
+  .navbar{
+    flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:14px;
+    padding:12px 20px calc(14px + env(safe-area-inset-bottom, 0px));
+    border-top:1px solid var(--border);
+  }
+  .nav-btn{
+    font-family:var(--font-display);font-weight:700;font-size:20px;
+    width:38px;height:38px;border-radius:50%;border:1px solid var(--border);
+    background:var(--surface-1);color:var(--text-primary);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .nav-btn:disabled{opacity:0.3;cursor:default;}
+  .nav-btn:not(:disabled):hover{border-color:var(--accent-gold);color:var(--accent-gold);}
+  .dots{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;}
+  .dot{
+    width:8px;height:8px;border-radius:50%;background:var(--gridline);border:none;padding:0;cursor:pointer;
+  }
+  .dot.active{background:var(--accent-gold);width:20px;border-radius:4px;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand">Council <span>Archive</span></div>
+    <div class="page-indicator">RECORD <b id="pageNow">01</b> / <span id="pageTotal">09</span></div>
+  </div>
+  <div class="progress-rail"><div class="progress-fill" id="progressFill"></div></div>
+
+  <div class="deck">
+    <div class="track" id="track">
+
+      <!-- 1. COVER -->
+      <section class="slide">
+        <div class="kicker" data-kicker></div>
+        <h1 class="slide-title">Gamers Unite | Twilight Imperium history</h1>
+        <p class="slide-sub">Every game logged so far. Who played what, who won, and which expansions were in play. Base Game through Thunder's Edge.</p>
+        <div class="kpi-row">
+          <div class="kpi-tile"><div class="kpi-value" id="k-games">–</div><div class="kpi-label">Games logged</div></div>
+          <div class="kpi-tile"><div class="kpi-value" id="k-players">–</div><div class="kpi-label">Players</div></div>
+          <div class="kpi-tile"><div class="kpi-value" id="k-factions">–</div><div class="kpi-label">Factions seen in play</div></div>
+          <div class="kpi-tile"><div class="kpi-value" id="k-avg">–</div><div class="kpi-label">Average players / game</div></div>
+        </div>
+        <p class="slide-sub" style="margin-top:auto;color:var(--text-muted);font-size:13px;">Use the arrows below, the dots, swipe, or ← → to move through the records.</p>
+      </section>
+
+      <!-- 2. STANDINGS -->
+      <section class="slide">
+        <div class="kicker" data-kicker></div>
+        <h2 class="slide-title">Standings</h2>
+        <p class="slide-sub">Wins across the six games that have actually finished. Two are still undecided.</p>
+        <div class="bars" id="s2-chart"></div>
+        <div class="callout" id="s2-fact"></div>
+      </section>
+
+      <!-- 3. ATTENDANCE -->
+      <section class="slide">
+        <div class="kicker" data-kicker></div>
+        <h2 class="slide-title">Attendance</h2>
+        <p class="slide-sub">Who actually shows up to the table, out of 8 games logged.</p>
+        <div class="bars" id="s3-chart"></div>
+        <div class="stack">
+          <div>
+            <div class="callout good" style="margin-bottom:8px;"><b>Perfect attendance.</b> Never missed a single game.</div>
+            <div class="people" id="s3-bigthree"></div>
+          </div>
+          <div>
+            <div class="callout critical" style="margin-bottom:8px;" id="s3-ghost-text"></div>
+            <div class="people" id="s3-ghosts"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. HARD LUCK -->
+      <section class="slide">
+        <div class="kicker" data-kicker></div>
+        <h2 class="slide-title">The Hard-Luck Award</h2>
+        <p class="slide-sub">Most games played by anyone in the group without a single win.</p>
+        <div class="spotlight">
+          <div class="spotlight-name" id="s4-name">–</div>
+          <div class="spotlight-stat" id="s4-stat">–</div>
+        </div>
+        <div class="table-scroll"><div class="card">
+          <table class="simple" id="s4-table">
+            <thead><tr><th>Player</th><th>Games</th><th>Wins</th><th>Win rate*</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div></div>
+        <p class="slide-sub" style="font-size:12px;color:var(--text-muted);">*Wins ÷ completed games that player actually sat in on — games still in progress don't count against anyone.</p>
+      </section>
+
+      <!-- 5. FACTION POPULARITY -->
+      <section class="slide">
+        <div class="kicker" data-kicker></div>
+        <h2 class="slide-title">Faction Popularity</h2>
+        <p class="slide-sub">Every faction pick across all 8 games, most-drafted first.</p>
+        <div class="bars" id="s5-chart"></div>
+        <div class="callout critical" id="s5-fact"></div>
+      </section>
+
+      <!-- 6. NEVER DRAFTED -->
+      <section class="slide">
+        <div class="kicker" data-kicker></div>
+        <h2 class="slide-title">Never Drafted</h2>
+        <p class="slide-sub" id="s6-sub">Factions in the pool that nobody has picked yet.</p>
+        <div class="file-grid" id="s6-cards"></div>
+      </section>
+
+      <!-- 7. LOYALTY -->
+      <section class="slide">
+        <div class="kicker" data-kicker></div>
+        <h2 class="slide-title">One Seat, Many Faces</h2>
+        <p class="slide-sub">How much variety each player brings — unique factions played, as a share of games played.</p>
+        <div class="bars" id="s7-chart"></div>
+        <div class="callout" id="s7-fact"></div>
+      </section>
+
+      <!-- 8. ERAS -->
+      <section class="slide">
+        <div class="kicker" data-kicker></div>
+        <h2 class="slide-title">Three Eras</h2>
+        <p class="slide-sub">Base Game → Prophecy of Kings (+ codexes) → Thunder's Edge.</p>
+        <div class="bars" id="s8-chart"></div>
+        <div class="callout" id="s8-fact"></div>
+      </section>
+
+      <!-- 9. SESSION LOG -->
+      <section class="slide">
+        <div class="kicker" data-kicker></div>
+        <h2 class="slide-title">Session Log</h2>
+        <p class="slide-sub">The full record, for reference — join codes and drafts where we kept them.</p>
+        <div class="table-scroll"><div class="card">
+          <table class="simple">
+            <thead><tr><th>#</th><th>Players</th><th>Ruleset</th><th>Winner</th><th>Code</th><th>Draft</th></tr></thead>
+            <tbody id="s9-table"></tbody>
+          </table>
+        </div></div>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="navbar">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous record">‹</button>
+    <div class="dots" id="dots"></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next record">›</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------------------------------------------------------------
+  // DATA — mirrors ti4-game-log/factions.csv, games.csv, game_players.csv
+  // ---------------------------------------------------------------
+  const FACTIONS = [
+    {id:'bastion',name:'Last Bastion',expansion:'thunders_edge'},
+    {id:'sardakk',name:'Sardakk Norr',expansion:'base'},
+    {id:'arborec',name:'The Arborec',expansion:'base'},
+    {id:'argent',name:'The Argent Flight',expansion:'pok'},
+    {id:'letnev',name:'The Barony of Letnev',expansion:'base'},
+    {id:'saar',name:'The Clan of Saar',expansion:'base'},
+    {id:'keleresa',name:'The Council Keleres – Argent',expansion:'codex3'},
+    {id:'keleresm',name:'The Council Keleres – Mentak',expansion:'codex3'},
+    {id:'keleresx',name:'The Council Keleres – Xxcha',expansion:'codex3'},
+    {id:'crimson',name:'The Crimson Rebellion',expansion:'thunders_edge'},
+    {id:'deepwrought',name:'The Deepwrought Scholarate',expansion:'thunders_edge'},
+    {id:'muaat',name:'The Embers of Muaat',expansion:'base'},
+    {id:'hacan',name:'The Emirates of Hacan',expansion:'base'},
+    {id:'empyrean',name:'The Empyrean',expansion:'pok'},
+    {id:'sol',name:'The Federation of Sol',expansion:'base'},
+    {id:'firmament',name:'The Firmament',expansion:'thunders_edge'},
+    {id:'ghost',name:'The Ghosts of Creuss',expansion:'base'},
+    {id:'l1z1x',name:'The L1Z1X Mindnet',expansion:'base'},
+    {id:'mahact',name:'The Mahact Gene-Sorcerers',expansion:'pok'},
+    {id:'mentak',name:'The Mentak Coalition',expansion:'base'},
+    {id:'naalu',name:'The Naalu Collective',expansion:'base'},
+    {id:'naaz',name:'The Naaz-Rokha Alliance',expansion:'pok'},
+    {id:'nekro',name:'The Nekro Virus',expansion:'base'},
+    {id:'nomad',name:'The Nomad',expansion:'pok'},
+    {id:'ralnel',name:'The Ral Nel Consortium',expansion:'thunders_edge'},
+    {id:'titans',name:'The Titans of Ul',expansion:'pok'},
+    {id:'jolnar',name:'The Universities of Jol-Nar',expansion:'base'},
+    {id:'cabal',name:"The Vuil'raith Cabal",expansion:'pok'},
+    {id:'winnu',name:'The Winnu',expansion:'base'},
+    {id:'xxcha',name:'The Xxcha Kingdom',expansion:'base'},
+    {id:'yin',name:'The Yin Brotherhood',expansion:'base'},
+    {id:'yssaril',name:'The Yssaril Tribes',expansion:'base'},
+  ];
+
+  const GAMES = [
+    {id:1, playerCount:6, expansions:['base'], status:'undecided', winner:null, winnerFaction:null, code:null, draftUrl:null},
+    {id:2, playerCount:7, expansions:['base','pok'], status:'completed', winner:'Elias', winnerFaction:'mahact', code:null, draftUrl:null},
+    {id:3, playerCount:5, expansions:['base','pok','codex1','codex2'], status:'completed', winner:'Axel', winnerFaction:'xxcha', code:null, draftUrl:null},
+    {id:4, playerCount:7, expansions:['base','pok','codex1','codex2'], status:'completed', winner:'Axel', winnerFaction:'l1z1x', code:null, draftUrl:'https://tidraft.com/draft/pressure-visz-rickar'},
+    {id:5, playerCount:6, expansions:['base','pok','codex1','codex2','codex3'], status:'completed', winner:'Axel', winnerFaction:'yin', code:'unknown', draftUrl:'https://tidraft.com/draft/dimensional-insider-taivra'},
+    {id:6, playerCount:7, expansions:['base','pok','thunders_edge'], status:'completed', winner:'Martin', winnerFaction:'hacan', code:'XP48XM', draftUrl:'https://tidraft.com/draft/information-partial-judicial'},
+    {id:7, playerCount:5, expansions:['base','pok','thunders_edge'], status:'completed', winner:'Martin', winnerFaction:'titans', code:'PPB5RV', draftUrl:'https://tidraft.com/draft/expand-xander-acidos'},
+    {id:8, playerCount:8, expansions:['base','pok','thunders_edge'], status:'in_progress', winner:null, winnerFaction:null, code:'AAX7X8', draftUrl:'https://tidraft.com/draft/against-norr-effort'},
+  ];
+
+  const PICKS = [
+    {game:1,player:'Martin',faction:'letnev',isWinner:null},
+    {game:1,player:'Konrad',faction:'sol',isWinner:null},
+    {game:1,player:'Axel',faction:'yssaril',isWinner:null},
+    {game:1,player:'Magnus',faction:'saar',isWinner:null},
+    {game:1,player:'Elias',faction:'hacan',isWinner:null},
+    {game:1,player:'Fabian',faction:'yin',isWinner:null},
+    {game:2,player:'Axel',faction:'naaz',isWinner:false},
+    {game:2,player:'Martin',faction:'jolnar',isWinner:false},
+    {game:2,player:'Elias',faction:'mahact',isWinner:true},
+    {game:2,player:'Fabian',faction:'empyrean',isWinner:false},
+    {game:2,player:'Arnold',faction:'nomad',isWinner:false},
+    {game:2,player:'Konrad',faction:'ghost',isWinner:false},
+    {game:2,player:'Kristian',faction:'letnev',isWinner:false},
+    {game:3,player:'Axel',faction:'xxcha',isWinner:true},
+    {game:3,player:'Martin',faction:'titans',isWinner:false},
+    {game:3,player:'Magnus',faction:'muaat',isWinner:false},
+    {game:3,player:'Amund',faction:'nekro',isWinner:false},
+    {game:3,player:'Fabian',faction:'sardakk',isWinner:false},
+    {game:4,player:'Axel',faction:'l1z1x',isWinner:true},
+    {game:4,player:'Martin',faction:'saar',isWinner:false},
+    {game:4,player:'Elias',faction:'cabal',isWinner:false},
+    {game:4,player:'Magnus',faction:'yssaril',isWinner:false},
+    {game:4,player:'Amund',faction:'sol',isWinner:false},
+    {game:4,player:'Fabian',faction:'winnu',isWinner:false},
+    {game:4,player:'Arnold',faction:'mentak',isWinner:false},
+    {game:5,player:'Axel',faction:'yin',isWinner:true},
+    {game:5,player:'Martin',faction:'arborec',isWinner:false},
+    {game:5,player:'Elias',faction:'naalu',isWinner:false},
+    {game:5,player:'Amund',faction:'argent',isWinner:false},
+    {game:5,player:'Fabian',faction:'muaat',isWinner:false},
+    {game:5,player:'Arnold',faction:'keleresx',isWinner:false},
+    {game:6,player:'Axel',faction:'xxcha',isWinner:false},
+    {game:6,player:'Martin',faction:'hacan',isWinner:true},
+    {game:6,player:'Elias',faction:'cabal',isWinner:false},
+    {game:6,player:'Siri',faction:'bastion',isWinner:false},
+    {game:6,player:'Amund',faction:'crimson',isWinner:false},
+    {game:6,player:'Fabian',faction:'ralnel',isWinner:false},
+    {game:6,player:'Arnold',faction:'deepwrought',isWinner:false},
+    {game:7,player:'Axel',faction:'naaz',isWinner:false},
+    {game:7,player:'Martin',faction:'titans',isWinner:true},
+    {game:7,player:'Magnus',faction:'jolnar',isWinner:false},
+    {game:7,player:'Siri',faction:'argent',isWinner:false},
+    {game:7,player:'Fabian',faction:'sardakk',isWinner:false},
+    {game:8,player:'Axel',faction:'ralnel',isWinner:null},
+    {game:8,player:'Martin',faction:'sol',isWinner:null},
+    {game:8,player:'Elias',faction:'mahact',isWinner:null},
+    {game:8,player:'Magnus',faction:'nekro',isWinner:null},
+    {game:8,player:'Siri',faction:'empyrean',isWinner:null},
+    {game:8,player:'Amund',faction:'firmament',isWinner:null},
+    {game:8,player:'Fabian',faction:'muaat',isWinner:null},
+    {game:8,player:'Arnold',faction:'nomad',isWinner:null},
+  ];
+
+  const ERA_LABELS = {
+    'base':'Base Game',
+    'base,pok':'Prophecy of Kings',
+    'base,pok,codex1,codex2':'PoK + Codex I–II',
+    'base,pok,codex1,codex2,codex3':'PoK + Codex I–III',
+    'base,pok,thunders_edge':"Thunder's Edge",
+  };
+
+  // The Obsidian isn't in FACTIONS at all: it's Firmament's in-game reveal, not a
+  // separate draft pick, so it never counts toward the faction pool.
+  const NEVER_DRAFTED_FLAVOR = {
+    keleresa:'One of the three Council Keleres flavors — sitting in the box since Codex III. The Xxcha flavor showed up in Game 5.',
+    keleresm:'One of the three Council Keleres flavors — still untested at this table. The Xxcha flavor showed up in Game 5.',
+  };
+
+  const EXPANSION_LABEL = {base:'Base',pok:'PoK',codex1:'Codex I',codex2:'Codex II',codex3:'Codex III',thunders_edge:"Thunder's Edge"};
+
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function fmtPct(n){ return (Math.round(n*1000)/10) + '%'; }
+
+  // ---------------------------------------------------------------
+  // DERIVED STATS
+  // ---------------------------------------------------------------
+  const factionById = Object.fromEntries(FACTIONS.map(f=>[f.id,f]));
+  const gameById = Object.fromEntries(GAMES.map(g=>[g.id,g]));
+  const totalGames = GAMES.length;
+  const completedGames = GAMES.filter(g=>g.status==='completed');
+
+  const playerNames = [...new Set(PICKS.map(p=>p.player))];
+  const playerStats = playerNames.map(name=>{
+    const picks = PICKS.filter(p=>p.player===name);
+    const gamesPlayed = picks.length;
+    const wins = picks.filter(p=>p.isWinner===true).length;
+    const completedParticipated = picks.filter(p=>gameById[p.game].status==='completed').length;
+    const winRate = completedParticipated ? wins/completedParticipated : null;
+    const factionCounts = {};
+    picks.forEach(p=>{ factionCounts[p.faction]=(factionCounts[p.faction]||0)+1; });
+    const uniqueCount = Object.keys(factionCounts).length;
+    const maxRepeat = Math.max(...Object.values(factionCounts));
+    const repeated = Object.entries(factionCounts).filter(([,c])=>c>1).map(([f,c])=>({faction:f,count:c}));
+    const lastGame = Math.max(...picks.map(p=>p.game));
+    return {name,gamesPlayed,wins,completedParticipated,winRate,uniqueCount,maxRepeat,repeated,lastGame};
+  });
+
+  const factionCounts = {};
+  PICKS.forEach(p=>{ factionCounts[p.faction]=(factionCounts[p.faction]||0)+1; });
+  const factionsPlayed = FACTIONS.filter(f=>factionCounts[f.id]).map(f=>({...f,count:factionCounts[f.id]}));
+  const factionsNeverPlayed = FACTIONS.filter(f=>!factionCounts[f.id]);
+
+  const bigThree = playerStats.filter(p=>p.gamesPlayed===totalGames).sort((a,b)=>a.name.localeCompare(b.name));
+  const ghosts = playerStats.filter(p=>(totalGames-p.lastGame)>=3).sort((a,b)=>a.lastGame-b.lastGame);
+
+  const zeroWinPlayers = playerStats.filter(p=>p.wins===0 && p.completedParticipated>0);
+  const hardLuck = zeroWinPlayers.reduce((a,b)=> (!a || b.gamesPlayed>a.gamesPlayed) ? b : a, null);
+
+  const topFactionCount = Math.max(...factionsPlayed.map(f=>f.count));
+  const topFactions = factionsPlayed.filter(f=>f.count===topFactionCount);
+  const topFactionsHaveNoWins = topFactions.every(f=> !PICKS.some(p=>p.faction===f.id && p.isWinner===true));
+
+  const winningFactionIds = completedGames.map(g=>g.winnerFaction);
+  const allWinnersDistinct = new Set(winningFactionIds).size === winningFactionIds.length;
+
+  const varietyLeaders = playerStats
+    .filter(p=>p.uniqueCount===p.gamesPlayed && p.gamesPlayed>=3)
+    .sort((a,b)=>b.gamesPlayed-a.gamesPlayed);
+  const maxRepeatOverall = Math.max(...playerStats.map(p=>p.maxRepeat));
+
+  const eraOrder = [];
+  const eraGames = {};
+  GAMES.forEach(g=>{
+    const label = ERA_LABELS[g.expansions.join(',')] || g.expansions.join(' + ');
+    if(!(label in eraGames)){ eraOrder.push(label); eraGames[label]=[]; }
+    eraGames[label].push(g);
+  });
+
+  // ---------------------------------------------------------------
+  // RENDER HELPERS
+  // ---------------------------------------------------------------
+  function barRows(container, items, colorVar, opts){
+    opts = opts || {};
+    const max = opts.max || Math.max(...items.map(it=>it.value), 1);
+    container.innerHTML = items.map(it=>{
+      const pct = Math.max((it.value/max)*100, it.value>0?4:0);
+      const valueClass = it.winClass ? ' win' : '';
+      return `<div class="bar-row">
+        <div class="bar-label">${esc(it.label)}${it.sub?`<span class="bar-sub">${esc(it.sub)}</span>`:''}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${it.color||('var('+colorVar+')')}"></div></div>
+        <div class="bar-value${valueClass}">${esc(it.valueLabel!==undefined?it.valueLabel:it.value)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function chip(name, ghost){
+    return `<div class="chip${ghost?' ghost':''}"><span class="dot-ic"></span>${esc(name)}</div>`;
+  }
+
+  // ---------------------------------------------------------------
+  // SLIDE 1 — COVER
+  // ---------------------------------------------------------------
+  document.getElementById('k-games').textContent = totalGames;
+  document.getElementById('k-players').textContent = playerNames.length;
+  document.getElementById('k-factions').textContent = factionsPlayed.length + ' / ' + FACTIONS.length;
+  const avgPlayers = GAMES.reduce((s,g)=>s+g.playerCount,0)/totalGames;
+  document.getElementById('k-avg').textContent = (Math.round(avgPlayers*10)/10).toFixed(1);
+
+  // ---------------------------------------------------------------
+  // SLIDE 2 — STANDINGS
+  // ---------------------------------------------------------------
+  {
+    const sorted = [...playerStats].sort((a,b)=> b.wins-a.wins || a.name.localeCompare(b.name));
+    barRows(document.getElementById('s2-chart'), sorted.map(p=>({
+      label:p.name,
+      sub: p.winRate!==null ? `${p.wins} of ${p.completedParticipated} completed games` : 'no completed games yet',
+      value:p.wins,
+      valueLabel: p.wins + (p.wins===1?' win':' wins'),
+      winClass: p.wins>0,
+    })), '--series-blue', {max: Math.max(...playerStats.map(p=>p.wins),1)});
+
+    document.getElementById('s2-fact').innerHTML = allWinnersDistinct
+      ? `<b>Zero repeat champions.</b> All ${completedGames.length} decided games have been won by ${completedGames.length} different factions — ${completedGames.map(g=>factionById[g.winnerFaction].name).join(', ')}.`
+      : `<b>${completedGames.length} games decided so far.</b>`;
+  }
+
+  // ---------------------------------------------------------------
+  // SLIDE 3 — ATTENDANCE
+  // ---------------------------------------------------------------
+  {
+    const sorted = [...playerStats].sort((a,b)=> b.gamesPlayed-a.gamesPlayed || a.name.localeCompare(b.name));
+    barRows(document.getElementById('s3-chart'), sorted.map(p=>({
+      label:p.name,
+      value:p.gamesPlayed,
+      valueLabel:p.gamesPlayed + ' / ' + totalGames,
+    })), '--series-orange', {max: totalGames});
+
+    document.getElementById('s3-bigthree').innerHTML = bigThree.map(p=>chip(p.name,false)).join('');
+    document.getElementById('s3-ghost-text').innerHTML = `<b>Missing in action.</b> Haven't been seen at the table since Game ${ghosts.length?ghosts[0].lastGame:'?'}.`;
+    document.getElementById('s3-ghosts').innerHTML = ghosts.map(p=>chip(p.name+` (last: Game ${p.lastGame})`,true)).join('');
+  }
+
+  // ---------------------------------------------------------------
+  // SLIDE 4 — HARD LUCK
+  // ---------------------------------------------------------------
+  if(hardLuck){
+    document.getElementById('s4-name').textContent = hardLuck.name;
+    document.getElementById('s4-stat').innerHTML = `<b>${hardLuck.gamesPlayed}</b> games played · <b>0</b> wins — the most games anyone has logged without a single victory.`;
+    const rows = [...playerStats].sort((a,b)=> b.gamesPlayed-a.gamesPlayed || b.wins-a.wins).slice(0,6);
+    document.getElementById('s4-table').querySelector('tbody').innerHTML = rows.map(p=>`
+      <tr>
+        <td class="strong">${esc(p.name)}${p.name===hardLuck.name?' 🎗️':''}</td>
+        <td class="mono">${p.gamesPlayed}</td>
+        <td class="mono">${p.wins}</td>
+        <td class="mono">${p.winRate!==null?fmtPct(p.winRate):'—'}</td>
+      </tr>`).join('');
+  }
+
+  // ---------------------------------------------------------------
+  // SLIDE 5 — FACTION POPULARITY
+  // ---------------------------------------------------------------
+  {
+    const sorted = [...factionsPlayed].sort((a,b)=> b.count-a.count || a.name.localeCompare(b.name));
+    barRows(document.getElementById('s5-chart'), sorted.map(f=>({
+      label:f.name,
+      sub:EXPANSION_LABEL[f.expansion],
+      value:f.count,
+      valueLabel:f.count,
+    })), '--series-blue', {max: topFactionCount});
+
+    const names = topFactions.map(f=>f.name).join(' and ');
+    document.getElementById('s5-fact').innerHTML = topFactionsHaveNoWins
+      ? `<b>${names}</b> ${topFactions.length>1?'are':'is'} the most-picked faction${topFactions.length>1?'s':''} in the group at ${topFactionCount} plays each — and neither has won a single game yet.`
+      : `<b>${names}</b> lead${topFactions.length>1?'':'s'} the pack at ${topFactionCount} plays.`;
+  }
+
+  // ---------------------------------------------------------------
+  // SLIDE 6 — NEVER DRAFTED
+  // ---------------------------------------------------------------
+  {
+    document.getElementById('s6-sub').textContent = `${factionsNeverPlayed.length} of the ${FACTIONS.length} factions in the pool have yet to see a table — both are Council Keleres flavors.`;
+    document.getElementById('s6-cards').innerHTML = factionsNeverPlayed.map(f=>`
+      <div class="file-card">
+        <div class="fmeta">${EXPANSION_LABEL[f.expansion]}</div>
+        <div class="fname">${esc(f.name)}</div>
+        <div class="fflavor">${esc(NEVER_DRAFTED_FLAVOR[f.id]||'Never drafted — yet.')}</div>
+      </div>`).join('');
+  }
+
+  // ---------------------------------------------------------------
+  // SLIDE 7 — LOYALTY
+  // ---------------------------------------------------------------
+  {
+    const sorted = [...playerStats].sort((a,b)=> (b.uniqueCount/b.gamesPlayed) - (a.uniqueCount/a.gamesPlayed) || b.gamesPlayed-a.gamesPlayed);
+    barRows(document.getElementById('s7-chart'), sorted.map(p=>({
+      label:p.name,
+      sub: p.repeated.length ? 'repeated: ' + p.repeated.map(r=>factionById[r.faction].name+' ×'+r.count).join(', ') : 'never repeated a faction',
+      value: p.uniqueCount/p.gamesPlayed,
+      valueLabel: p.uniqueCount + '/' + p.gamesPlayed,
+    })), '--accent-violet', {max:1});
+
+    const leaderNames = varietyLeaders.map(p=>`${p.name} (${p.gamesPlayed}/${p.gamesPlayed})`).join(', ');
+    document.getElementById('s7-fact').innerHTML = `<b>Nobody has a "main" yet.</b> The most any player has repeated a single faction is ${maxRepeatOverall}×. Most consistent variety: ${leaderNames || '—'} — a different faction every single time.`;
+  }
+
+  // ---------------------------------------------------------------
+  // SLIDE 8 — ERAS
+  // ---------------------------------------------------------------
+  {
+    barRows(document.getElementById('s8-chart'), eraOrder.map(label=>{
+      const games = eraGames[label];
+      return {
+        label,
+        sub: `games ${games.map(g=>g.id).join(', ')}`,
+        value: games.length,
+        valueLabel: games.length + (games.length===1?' game':' games'),
+      };
+    }), '--accent-teal', {max: Math.max(...eraOrder.map(l=>eraGames[l].length))});
+
+    function eraRecord(matchLabelFn){
+      const games = GAMES.filter(g=>matchLabelFn(ERA_LABELS[g.expansions.join(',')]) && g.status==='completed');
+      const tally = {};
+      games.forEach(g=>{ tally[g.winner]=(tally[g.winner]||0)+1; });
+      const [topName, topWins] = Object.entries(tally).sort((a,b)=>b[1]-a[1])[0] || [null,0];
+      return {topName, topWins, total: games.length};
+    }
+    const pok = eraRecord(l=>l!=="Thunder's Edge" && l!=='Base Game');
+    const te = eraRecord(l=>l==="Thunder's Edge");
+    let facts = [];
+    if(pok.topName) facts.push(`<b>${esc(pok.topName)}</b> ruled the Prophecy of Kings years (${pok.topWins} of ${pok.total} titles)`);
+    if(te.topName) facts.push(`<b>${esc(te.topName)}</b> has swept Thunder's Edge so far (${te.topWins} of ${te.total})`);
+    document.getElementById('s8-fact').innerHTML = facts.join(' — ') + '.';
+  }
+
+  // ---------------------------------------------------------------
+  // SLIDE 9 — SESSION LOG
+  // ---------------------------------------------------------------
+  {
+    document.getElementById('s9-table').innerHTML = GAMES.map(g=>{
+      const winner = g.winner ? `${esc(g.winner)} <span class="mono" style="color:var(--text-muted);">(${esc(factionById[g.winnerFaction].name)})</span>` :
+        (g.status==='in_progress' ? '<span class="mono">in progress</span>' : '<span class="mono">undecided</span>');
+      const code = g.code ? `<span class="mono">${esc(g.code)}</span>` : '<span class="mono" style="color:var(--text-muted);">—</span>';
+      const draft = g.draftUrl ? `<a class="link" href="${esc(g.draftUrl)}" target="_blank" rel="noopener">draft ↗</a>` : '<span style="color:var(--text-muted);">—</span>';
+      return `<tr>
+        <td class="strong mono">${g.id}</td>
+        <td class="mono">${g.playerCount}</td>
+        <td>${ERA_LABELS[g.expansions.join(',')] || g.expansions.join(' + ')}</td>
+        <td>${winner}</td>
+        <td>${code}</td>
+        <td>${draft}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ---------------------------------------------------------------
+  // NAVIGATION
+  // ---------------------------------------------------------------
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  const track = document.getElementById('track');
+  const dotsEl = document.getElementById('dots');
+  const pageNow = document.getElementById('pageNow');
+  const progressFill = document.getElementById('progressFill');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  document.getElementById('pageTotal').textContent = String(total).padStart(2,'0');
+  slides.forEach((s,i)=>{ s.querySelector('[data-kicker]').textContent = `Record ${String(i+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`; });
+
+  slides.forEach((_,i)=>{
+    const d = document.createElement('button');
+    d.className = 'dot';
+    d.setAttribute('aria-label', `Go to record ${i+1}`);
+    d.addEventListener('click', ()=>goTo(i));
+    dotsEl.appendChild(d);
+  });
+  const dotEls = Array.from(dotsEl.querySelectorAll('.dot'));
+
+  let current = 0;
+  function goTo(i){
+    current = Math.max(0, Math.min(total-1, i));
+    track.style.transform = `translateX(-${current*100}%)`;
+    pageNow.textContent = String(current+1).padStart(2,'0');
+    progressFill.style.width = `${((current+1)/total)*100}%`;
+    dotEls.forEach((d,idx)=>d.classList.toggle('active', idx===current));
+    prevBtn.disabled = current===0;
+    nextBtn.disabled = current===total-1;
+  }
+
+  prevBtn.addEventListener('click', ()=>goTo(current-1));
+  nextBtn.addEventListener('click', ()=>goTo(current+1));
+  document.addEventListener('keydown', e=>{
+    if(e.key==='ArrowRight'){ goTo(current+1); }
+    if(e.key==='ArrowLeft'){ goTo(current-1); }
+  });
+  let touchStartX = null;
+  track.addEventListener('touchstart', e=>{ touchStartX = e.touches[0].clientX; }, {passive:true});
+  track.addEventListener('touchend', e=>{
+    if(touchStartX===null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if(Math.abs(dx) > 40){ dx < 0 ? goTo(current+1) : goTo(current-1); }
+    touchStartX = null;
+  }, {passive:true});
+
+  goTo(0);
+})();
+</script>
+</body>
+</html>
