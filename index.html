@@ -182,8 +182,16 @@
     background:var(--surface-1);border:1px solid var(--border);border-radius:14px;padding:22px 20px;
   }
   .spotlight-name{font-family:var(--font-display);font-weight:700;font-size:clamp(32px,9vw,52px);color:var(--status-critical);line-height:1;}
+  .spotlight-name.gold{color:var(--accent-gold);}
   .spotlight-stat{font-size:15px;color:var(--text-secondary);}
   .spotlight-stat b{color:var(--text-primary);font-family:var(--font-mono);}
+
+  .plaque{
+    align-self:center;margin-top:4px;padding:10px 26px;
+    border-top:1px solid var(--accent-gold);border-bottom:1px solid var(--accent-gold);
+    font-family:var(--font-display);font-weight:700;font-size:15px;
+    letter-spacing:0.18em;text-transform:uppercase;color:var(--accent-gold);
+  }
 
   table.simple{width:100%;border-collapse:collapse;font-size:13px;}
   table.simple th{
@@ -255,10 +263,22 @@
           <div class="kpi-tile"><div class="kpi-value" id="k-players">–</div><div class="kpi-label">Players</div></div>
           <div class="kpi-tile"><div class="kpi-value" id="k-factions">–</div><div class="kpi-label">Factions seen in play</div></div>
           <div class="kpi-tile"><div class="kpi-value" id="k-avg">–</div><div class="kpi-label">Average players / game</div></div>
-          <div class="kpi-tile"><div class="kpi-value" id="k-trophy">–</div><div class="kpi-label">Trophy games played</div></div>
-          <div class="kpi-tile"><div class="kpi-value" id="k-pretrophy">–</div><div class="kpi-label">Pre-trophy games</div></div>
+          <div class="kpi-tile"><div class="kpi-value" id="k-hrsperplayer">–</div><div class="kpi-label">Avg hours / player</div></div>
         </div>
         <p class="slide-sub" style="margin-top:auto;color:var(--text-muted);font-size:13px;">Use the arrows below, the dots, swipe, or ← → to move through the records.</p>
+      </section>
+
+      <!-- FEATURE: IMPERIAL ELIAS -->
+      <section class="slide">
+        <div class="kicker" data-kicker></div>
+        <h2 class="slide-title">Imperial Elias</h2>
+        <p class="slide-sub">The newest name on the trophy.</p>
+        <div class="spotlight">
+          <div class="spotlight-name gold">Elias</div>
+          <div class="spotlight-stat" id="feat-stat">–</div>
+        </div>
+        <p class="slide-sub" style="max-width:62ch;">He spent the early game dead last in speaker order several times in a row. Leaning hard on Imperials, he turned it into a lead before the rest of the table could catch up. This is his second win piloting the Mahact Gene-Sorcerers, and he's yet to lose with them.</p>
+        <div class="plaque">"Imperial Elias"</div>
       </section>
 
       <!-- 2. STANDINGS -->
@@ -563,6 +583,12 @@
     .filter(([,r])=>r.plays>=2 && r.wins===r.plays)
     .map(([fid,r])=>({fid, ...r}));
 
+  // Only games 6+ were timed, so this is an average of what we measured, not a total.
+  const timedGames = GAMES.filter(g=>g.durationHours!=null);
+  const avgHoursPerPlayer = timedGames.length
+    ? timedGames.reduce((s,g)=>s+g.durationHours/g.playerCount,0)/timedGames.length
+    : null;
+
   const winningFactionIds = trophyGames.map(g=>g.winnerFaction);
   const allWinnersDistinct = new Set(winningFactionIds).size === winningFactionIds.length;
   const pseudoWinners = pseudoGames.map(g=>`${g.winner} (${factionById[g.winnerFaction].name}, Game ${g.id})`);
@@ -609,8 +635,24 @@
   document.getElementById('k-factions').textContent = factionsPlayed.length + ' / ' + FACTIONS.length;
   const avgPlayers = GAMES.reduce((s,g)=>s+g.playerCount,0)/totalGames;
   document.getElementById('k-avg').textContent = (Math.round(avgPlayers*10)/10).toFixed(1);
-  document.getElementById('k-trophy').textContent = GAMES.filter(g=>g.trophyEligible).length;
-  document.getElementById('k-pretrophy').textContent = GAMES.filter(g=>!g.trophyEligible).length;
+  document.getElementById('k-hrsperplayer').textContent = avgHoursPerPlayer!==null
+    ? (Math.round(avgHoursPerPlayer*10)/10).toFixed(1)
+    : '—';
+
+  // ---------------------------------------------------------------
+  // FEATURE — IMPERIAL ELIAS
+  // ---------------------------------------------------------------
+  {
+    const latestTrophyWin = [...trophyGames].sort((a,b)=>b.id-a.id)[0];
+    if(latestTrophyWin){
+      const winnerStats = playerStats.find(p=>p.name===latestTrophyWin.winner);
+      const firstTimePhrase = winnerStats.wins===1 ? 'his first trophy win' : `trophy win #${winnerStats.wins}`;
+      const faction = factionById[latestTrophyWin.winnerFaction];
+      const rec = factionRecord[latestTrophyWin.winnerFaction];
+      const recordPhrase = rec && rec.plays>1 ? ` (${rec.wins}-${rec.plays-rec.wins} with the faction overall)` : '';
+      document.getElementById('feat-stat').innerHTML = `Game ${latestTrophyWin.id} winner — ${firstTimePhrase}, piloting <b>${faction.name}</b>${recordPhrase}.`;
+    }
+  }
 
   // ---------------------------------------------------------------
   // SLIDE 2 — STANDINGS
@@ -794,22 +836,22 @@
   // SLIDE 9 — GAME LENGTH
   // ---------------------------------------------------------------
   {
-    const timedGames = GAMES.filter(g=>g.durationHours!=null).sort((a,b)=>a.id-b.id);
-    if(timedGames.length){
-      document.getElementById('s9-sub').textContent = `Session length for ${timedGames.length} of ${totalGames} games — we only started the clock from Game ${timedGames[0].id}.`;
-      barRows(document.getElementById('s9-chart'), timedGames.map(g=>({
+    const timedGamesSorted = [...timedGames].sort((a,b)=>a.id-b.id);
+    if(timedGamesSorted.length){
+      document.getElementById('s9-sub').textContent = `Session length for ${timedGamesSorted.length} of ${totalGames} games — we only started the clock from Game ${timedGamesSorted[0].id}.`;
+      barRows(document.getElementById('s9-chart'), timedGamesSorted.map(g=>({
         label:`Game ${g.id}`,
         sub: `${g.playerCount} players · ${g.winner ? 'won by '+g.winner : 'undecided'}`,
         value:g.durationHours,
         valueLabel:g.durationHours+'h',
-      })), '--series-green', {max: Math.max(...timedGames.map(g=>g.durationHours))});
+      })), '--series-green', {max: Math.max(...timedGamesSorted.map(g=>g.durationHours))});
 
-      const avgHours = timedGames.reduce((s,g)=>s+g.durationHours,0)/timedGames.length;
-      const byPace = [...timedGames].sort((a,b)=> (a.durationHours/a.playerCount) - (b.durationHours/b.playerCount));
+      const avgHours = timedGamesSorted.reduce((s,g)=>s+g.durationHours,0)/timedGamesSorted.length;
+      const byPace = [...timedGamesSorted].sort((a,b)=> (a.durationHours/a.playerCount) - (b.durationHours/b.playerCount));
       const fastest = byPace[0];
       const slowest = byPace[byPace.length-1];
       let paceFact = '';
-      if(timedGames.length>1 && fastest.id!==slowest.id){
+      if(timedGamesSorted.length>1 && fastest.id!==slowest.id){
         const fastestPace = (fastest.durationHours/fastest.playerCount).toFixed(1);
         const slowestPace = (slowest.durationHours/slowest.playerCount).toFixed(1);
         paceFact = ` Per player, Game ${fastest.id} moved fastest (${fastestPace}h/player, ${fastest.playerCount} players) and Game ${slowest.id} dragged the most (${slowestPace}h/player, ${slowest.playerCount} players).`;
