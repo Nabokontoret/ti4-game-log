@@ -313,6 +313,7 @@
         <p class="slide-sub">Every faction pick across all 8 games, most-drafted first.</p>
         <div class="bars" id="s5-chart"></div>
         <div class="callout critical" id="s5-fact"></div>
+        <div class="callout good" id="s5-fact2"></div>
       </section>
 
       <!-- 6. NEVER DRAFTED -->
@@ -548,6 +549,20 @@
   const topFactions = factionsPlayed.filter(f=>f.count===topFactionCount);
   const topFactionsHaveNoWins = topFactions.every(f=> !PICKS.some(p=>p.faction===f.id && p.isWinner===true));
 
+  // Most dominant faction: played 2+ times, won every single time (trophy or not).
+  const factionRecord = {};
+  PICKS.forEach(p=>{
+    factionRecord[p.faction] = factionRecord[p.faction] || {plays:0, wins:0, pilots:[]};
+    factionRecord[p.faction].plays++;
+    if(p.isWinner===true){
+      factionRecord[p.faction].wins++;
+      factionRecord[p.faction].pilots.push(p.player);
+    }
+  });
+  const dominantFactions = Object.entries(factionRecord)
+    .filter(([,r])=>r.plays>=2 && r.wins===r.plays)
+    .map(([fid,r])=>({fid, ...r}));
+
   const winningFactionIds = trophyGames.map(g=>g.winnerFaction);
   const allWinnersDistinct = new Set(winningFactionIds).size === winningFactionIds.length;
   const pseudoWinners = pseudoGames.map(g=>`${g.winner} (${factionById[g.winnerFaction].name}, Game ${g.id})`);
@@ -694,6 +709,21 @@
     document.getElementById('s5-fact').innerHTML = topFactionsHaveNoWins
       ? `<b>${names}</b> ${topFactions.length>1?'are':'is'} the most-picked faction${topFactions.length>1?'s':''} in the group at ${topFactionCount} plays each — and neither has won a single game yet.`
       : `<b>${names}</b> lead${topFactions.length>1?'':'s'} the pack at ${topFactionCount} plays.`;
+
+    if(dominantFactions.length){
+      const sentences = dominantFactions.map(d=>{
+        const faction = factionById[d.fid];
+        const uniquePilots = [...new Set(d.pilots)];
+        const pilotPhrase = uniquePilots.length===1 ? `every time by ${uniquePilots[0]}` : `by ${uniquePilots.join(' and ')}`;
+        const gamesWon = PICKS.filter(p=>p.faction===d.fid && p.isWinner===true).map(p=>gameById[p.game]);
+        const hasPseudoWin = gamesWon.some(g=>!g.trophyEligible);
+        const asterisk = hasPseudoWin ? ' — one of those wasn’t a trophy game, but the record still stands' : '';
+        return `<b>${faction.name}</b> has won all ${d.plays} of its games — ${pilotPhrase}${asterisk}`;
+      });
+      document.getElementById('s5-fact2').innerHTML = `<b>Most dominant faction${dominantFactions.length>1?'s':''}:</b> ${sentences.join('; ')}.`;
+    } else {
+      document.getElementById('s5-fact2').remove();
+    }
   }
 
   // ---------------------------------------------------------------
