@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Council Archive</title>
-<meta name="description" content="Win rates, faction popularity, and running feuds from the group's Twilight Imperium campaign, told across nine records you click through.">
+<meta name="description" content="Win rates, faction popularity, and running feuds from the group's Twilight Imperium campaign, told across ten records you click through.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪐</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap">
 
@@ -262,7 +263,7 @@
       <section class="slide">
         <div class="kicker" data-kicker></div>
         <h2 class="slide-title">Standings</h2>
-        <p class="slide-sub">Wins across the six games that have actually finished. Two are still undecided.</p>
+        <p class="slide-sub" id="s2-sub">Trophy wins so far.</p>
         <div class="bars" id="s2-chart"></div>
         <div class="callout" id="s2-fact"></div>
       </section>
@@ -289,18 +290,18 @@
       <section class="slide">
         <div class="kicker" data-kicker></div>
         <h2 class="slide-title">The Hard-Luck Award</h2>
-        <p class="slide-sub">Most games played by anyone in the group without a single win.</p>
+        <p class="slide-sub">Most games played by anyone in the group without a single trophy win.</p>
         <div class="spotlight">
           <div class="spotlight-name" id="s4-name">–</div>
           <div class="spotlight-stat" id="s4-stat">–</div>
         </div>
         <div class="table-scroll"><div class="card">
           <table class="simple" id="s4-table">
-            <thead><tr><th>Player</th><th>Games</th><th>Wins</th><th>Win rate*</th></tr></thead>
+            <thead><tr><th>Player</th><th>Games</th><th>Trophy wins</th><th>Win rate*</th></tr></thead>
             <tbody></tbody>
           </table>
         </div></div>
-        <p class="slide-sub" style="font-size:12px;color:var(--text-muted);">*Wins ÷ completed games that player actually sat in on — games still in progress don't count against anyone.</p>
+        <p class="slide-sub" style="font-size:12px;color:var(--text-muted);">*Trophy wins ÷ trophy games that player actually sat in on — pre-trophy games and games still in progress don't count against anyone.</p>
       </section>
 
       <!-- 5. FACTION POPULARITY -->
@@ -351,7 +352,7 @@
       <section class="slide">
         <div class="kicker" data-kicker></div>
         <h2 class="slide-title">Session Log</h2>
-        <p class="slide-sub">The full record, for reference — join codes and drafts where we kept them.</p>
+        <p class="slide-sub">The full record, for reference — join codes and drafts where we kept them. <span class="tag">pseudo</span> marks pre-trophy wins (games 1–3) that don't count on the trophy.</p>
         <div class="table-scroll"><div class="card">
           <table class="simple">
             <thead><tr><th>#</th><th>Players</th><th>Ruleset</th><th>Winner</th><th>Code</th><th>Draft</th><th>Length</th></tr></thead>
@@ -413,14 +414,14 @@
   ];
 
   const GAMES = [
-    {id:1, playerCount:6, expansions:['base'], status:'undecided', winner:null, winnerFaction:null, code:null, draftUrl:null},
-    {id:2, playerCount:7, expansions:['base','pok'], status:'completed', winner:'Elias', winnerFaction:'mahact', code:null, draftUrl:null},
-    {id:3, playerCount:5, expansions:['base','pok','codex1','codex2'], status:'completed', winner:'Axel', winnerFaction:'xxcha', code:null, draftUrl:null},
-    {id:4, playerCount:7, expansions:['base','pok','codex1','codex2'], status:'completed', winner:'Axel', winnerFaction:'l1z1x', code:null, draftUrl:'https://tidraft.com/draft/pressure-visz-rickar'},
-    {id:5, playerCount:6, expansions:['base','pok','codex1','codex2','codex3'], status:'completed', winner:'Axel', winnerFaction:'yin', code:'unknown', draftUrl:'https://tidraft.com/draft/dimensional-insider-taivra'},
-    {id:6, playerCount:7, expansions:['base','pok','thunders_edge'], status:'completed', winner:'Martin', winnerFaction:'hacan', code:'XP48XM', draftUrl:'https://tidraft.com/draft/information-partial-judicial', durationHours:13},
-    {id:7, playerCount:5, expansions:['base','pok','thunders_edge'], status:'completed', winner:'Martin', winnerFaction:'titans', code:'PPB5RV', draftUrl:'https://tidraft.com/draft/expand-xander-acidos', durationHours:9},
-    {id:8, playerCount:8, expansions:['base','pok','thunders_edge'], status:'completed', winner:'Elias', winnerFaction:'mahact', code:'TCGRMP', draftUrl:'https://tidraft.com/draft/against-norr-effort', durationHours:11},
+    {id:1, playerCount:6, expansions:['base'], status:'undecided', winner:null, winnerFaction:null, code:null, draftUrl:null, trophyEligible:false},
+    {id:2, playerCount:7, expansions:['base','pok'], status:'completed', winner:'Elias', winnerFaction:'mahact', code:null, draftUrl:null, trophyEligible:false},
+    {id:3, playerCount:5, expansions:['base','pok','codex1','codex2'], status:'completed', winner:'Axel', winnerFaction:'xxcha', code:null, draftUrl:null, trophyEligible:false},
+    {id:4, playerCount:7, expansions:['base','pok','codex1','codex2'], status:'completed', winner:'Axel', winnerFaction:'l1z1x', code:null, draftUrl:'https://tidraft.com/draft/pressure-visz-rickar', trophyEligible:true},
+    {id:5, playerCount:6, expansions:['base','pok','codex1','codex2','codex3'], status:'completed', winner:'Axel', winnerFaction:'yin', code:'unknown', draftUrl:'https://tidraft.com/draft/dimensional-insider-taivra', trophyEligible:true},
+    {id:6, playerCount:7, expansions:['base','pok','thunders_edge'], status:'completed', winner:'Martin', winnerFaction:'hacan', code:'XP48XM', draftUrl:'https://tidraft.com/draft/information-partial-judicial', durationHours:13, trophyEligible:true},
+    {id:7, playerCount:5, expansions:['base','pok','thunders_edge'], status:'completed', winner:'Martin', winnerFaction:'titans', code:'PPB5RV', draftUrl:'https://tidraft.com/draft/expand-xander-acidos', durationHours:9, trophyEligible:true},
+    {id:8, playerCount:8, expansions:['base','pok','thunders_edge'], status:'completed', winner:'Elias', winnerFaction:'mahact', code:'TCGRMP', draftUrl:'https://tidraft.com/draft/against-norr-effort', durationHours:11, trophyEligible:true},
   ];
 
   const PICKS = [
@@ -504,21 +505,30 @@
   const gameById = Object.fromEntries(GAMES.map(g=>[g.id,g]));
   const totalGames = GAMES.length;
   const completedGames = GAMES.filter(g=>g.status==='completed');
+  // The group kept score informally for games 1-3 while everyone was still learning
+  // the rules; the trophy (the record that "counts") started with Game 4, the first
+  // drafted game. Games 1-3 stay in every other stat (attendance, factions, etc.) —
+  // only win-tracking treats them as a separate "pseudo" era.
+  const trophyGames = completedGames.filter(g=>g.trophyEligible);
+  const pseudoGames = completedGames.filter(g=>!g.trophyEligible);
+  const trophyStartId = Math.min(...GAMES.filter(g=>g.trophyEligible).map(g=>g.id));
 
   const playerNames = [...new Set(PICKS.map(p=>p.player))];
   const playerStats = playerNames.map(name=>{
     const picks = PICKS.filter(p=>p.player===name);
     const gamesPlayed = picks.length;
-    const wins = picks.filter(p=>p.isWinner===true).length;
-    const completedParticipated = picks.filter(p=>gameById[p.game].status==='completed').length;
+    const trophyPicks = picks.filter(p=>gameById[p.game].trophyEligible);
+    const wins = trophyPicks.filter(p=>p.isWinner===true).length;
+    const completedParticipated = trophyPicks.filter(p=>gameById[p.game].status==='completed').length;
     const winRate = completedParticipated ? wins/completedParticipated : null;
+    const pseudoWins = picks.filter(p=>p.isWinner===true && !gameById[p.game].trophyEligible).length;
     const factionCounts = {};
     picks.forEach(p=>{ factionCounts[p.faction]=(factionCounts[p.faction]||0)+1; });
     const uniqueCount = Object.keys(factionCounts).length;
     const maxRepeat = Math.max(...Object.values(factionCounts));
     const repeated = Object.entries(factionCounts).filter(([,c])=>c>1).map(([f,c])=>({faction:f,count:c}));
     const lastGame = Math.max(...picks.map(p=>p.game));
-    return {name,gamesPlayed,wins,completedParticipated,winRate,uniqueCount,maxRepeat,repeated,lastGame};
+    return {name,gamesPlayed,wins,completedParticipated,winRate,pseudoWins,uniqueCount,maxRepeat,repeated,lastGame};
   });
 
   const factionCounts = {};
@@ -536,8 +546,9 @@
   const topFactions = factionsPlayed.filter(f=>f.count===topFactionCount);
   const topFactionsHaveNoWins = topFactions.every(f=> !PICKS.some(p=>p.faction===f.id && p.isWinner===true));
 
-  const winningFactionIds = completedGames.map(g=>g.winnerFaction);
+  const winningFactionIds = trophyGames.map(g=>g.winnerFaction);
   const allWinnersDistinct = new Set(winningFactionIds).size === winningFactionIds.length;
+  const pseudoWinners = pseudoGames.map(g=>`${g.winner} (${factionById[g.winnerFaction].name}, Game ${g.id})`);
 
   const varietyLeaders = playerStats
     .filter(p=>p.uniqueCount===p.gamesPlayed && p.gamesPlayed>=3)
@@ -586,21 +597,24 @@
   // SLIDE 2 — STANDINGS
   // ---------------------------------------------------------------
   {
+    document.getElementById('s2-sub').textContent = `Trophy wins since Game ${trophyStartId} — games before that were pre-trophy learning games and don't count here.`;
+
     const sorted = [...playerStats].sort((a,b)=> b.wins-a.wins || a.name.localeCompare(b.name));
     barRows(document.getElementById('s2-chart'), sorted.map(p=>({
       label:p.name,
-      sub: p.winRate!==null ? `${p.wins} of ${p.completedParticipated} completed games` : 'no completed games yet',
+      sub: p.winRate!==null ? `${p.wins} of ${p.completedParticipated} trophy games` : 'no trophy games played',
       value:p.wins,
       valueLabel: p.wins + (p.wins===1?' win':' wins'),
       winClass: p.wins>0,
     })), '--series-blue', {max: Math.max(...playerStats.map(p=>p.wins),1)});
 
+    let factHtml;
     if(allWinnersDistinct){
-      document.getElementById('s2-fact').innerHTML = `<b>Zero repeat champions.</b> All ${completedGames.length} decided games have been won by ${completedGames.length} different factions — ${completedGames.map(g=>factionById[g.winnerFaction].name).join(', ')}.`;
+      factHtml = `<b>Zero repeat champions on the trophy.</b> All ${trophyGames.length} trophy games have been won by ${trophyGames.length} different factions — ${trophyGames.map(g=>factionById[g.winnerFaction].name).join(', ')}.`;
     } else {
       const winTally = {};
       const winPilots = {};
-      completedGames.forEach(g=>{
+      trophyGames.forEach(g=>{
         winTally[g.winnerFaction] = (winTally[g.winnerFaction]||0)+1;
         winPilots[g.winnerFaction] = winPilots[g.winnerFaction]||[];
         winPilots[g.winnerFaction].push(g.winner);
@@ -613,15 +627,17 @@
         const countPhrase = c===2 ? 'twice' : `${c} times`;
         return `<b>${factionById[fid].name}</b> has won ${countPhrase} — ${pilotPhrase}`;
       });
-      let factHtml;
       if(sentences.length){
         const pluralSuffix = repeats.length>1 ? 's' : '';
-        factHtml = `${sentences.join('; ')}. The only faction${pluralSuffix} to repeat as champion, out of ${completedGames.length} decided games.`;
+        factHtml = `${sentences.join('; ')}. The only faction${pluralSuffix} to repeat as champion on the trophy, out of ${trophyGames.length} decided games.`;
       } else {
-        factHtml = `<b>${completedGames.length} games decided so far.</b>`;
+        factHtml = `<b>${trophyGames.length} trophy games decided so far.</b>`;
       }
-      document.getElementById('s2-fact').innerHTML = factHtml;
     }
+    if(pseudoWinners.length){
+      factHtml += ` <span style="color:var(--text-muted);">Pre-trophy: ${pseudoWinners.join(', ')} — doesn't count toward the above.</span>`;
+    }
+    document.getElementById('s2-fact').innerHTML = factHtml;
   }
 
   // ---------------------------------------------------------------
@@ -645,7 +661,7 @@
   // ---------------------------------------------------------------
   if(hardLuck){
     document.getElementById('s4-name').textContent = hardLuck.name;
-    document.getElementById('s4-stat').innerHTML = `<b>${hardLuck.gamesPlayed}</b> games played · <b>0</b> wins — the most games anyone has logged without a single victory.`;
+    document.getElementById('s4-stat').innerHTML = `<b>${hardLuck.gamesPlayed}</b> games played · <b>0</b> trophy wins — the most games anyone has logged without a single trophy victory.`;
     const rows = [...playerStats].sort((a,b)=> b.gamesPlayed-a.gamesPlayed || b.wins-a.wins).slice(0,6);
     document.getElementById('s4-table').querySelector('tbody').innerHTML = rows.map(p=>`
       <tr>
@@ -718,7 +734,8 @@
     }), '--accent-teal', {max: Math.max(...eraOrder.map(l=>eraGames[l].length))});
 
     function eraRecord(matchLabelFn){
-      const games = GAMES.filter(g=>matchLabelFn(ERA_LABELS[g.expansions.join(',')]) && g.status==='completed');
+      // Trophy-only: pre-trophy games (1-3) had winners, but don't count toward any record.
+      const games = GAMES.filter(g=>matchLabelFn(ERA_LABELS[g.expansions.join(',')]) && g.status==='completed' && g.trophyEligible);
       const tally = {};
       games.forEach(g=>{ tally[g.winner]=(tally[g.winner]||0)+1; });
       const [topName, topWins] = Object.entries(tally).sort((a,b)=>b[1]-a[1])[0] || [null,0];
@@ -727,7 +744,10 @@
     const pok = eraRecord(l=>l!=="Thunder's Edge" && l!=='Base Game');
     const te = eraRecord(l=>l==="Thunder's Edge");
     let facts = [];
-    if(pok.topName) facts.push(`<b>${esc(pok.topName)}</b> ruled the Prophecy of Kings years (${pok.topWins} of ${pok.total} titles)`);
+    if(pok.topName){
+      const pokVerb = pok.topWins === pok.total ? 'swept' : 'led';
+      facts.push(`<b>${esc(pok.topName)}</b> ${pokVerb} the Prophecy of Kings trophy era (${pok.topWins} of ${pok.total})`);
+    }
     if(te.topName){
       const teVerb = te.topWins === te.total ? 'has swept' : 'leads';
       facts.push(`<b>${esc(te.topName)}</b> ${teVerb} Thunder's Edge so far (${te.topWins} of ${te.total})`);
@@ -771,8 +791,13 @@
   // ---------------------------------------------------------------
   {
     document.getElementById('s10-table').innerHTML = GAMES.map(g=>{
-      const winner = g.winner ? `${esc(g.winner)} <span class="mono" style="color:var(--text-muted);">(${esc(factionById[g.winnerFaction].name)})</span>` :
-        (g.status==='in_progress' ? '<span class="mono">in progress</span>' : '<span class="mono">undecided</span>');
+      let winner;
+      if(g.winner){
+        const pseudoTag = g.trophyEligible ? '' : ' <span class="tag">pseudo</span>';
+        winner = `${esc(g.winner)} <span class="mono" style="color:var(--text-muted);">(${esc(factionById[g.winnerFaction].name)})</span>${pseudoTag}`;
+      } else {
+        winner = g.status==='in_progress' ? '<span class="mono">in progress</span>' : '<span class="mono">undecided</span>';
+      }
       let code;
       if(!g.code){
         code = '<span class="mono" style="color:var(--text-muted);">—</span>';
