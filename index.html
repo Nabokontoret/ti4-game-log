@@ -297,7 +297,7 @@
         </div>
         <div class="table-scroll"><div class="card">
           <table class="simple" id="s4-table">
-            <thead><tr><th>Player</th><th>Games</th><th>Trophy wins</th><th>Win rate*</th></tr></thead>
+            <thead><tr><th>Player</th><th>Games</th><th>Trophy games</th><th>Trophy wins</th><th>Win rate*</th></tr></thead>
             <tbody></tbody>
           </table>
         </div></div>
@@ -667,6 +667,7 @@
       <tr>
         <td class="strong">${esc(p.name)}${p.name===hardLuck.name?' 🎗️':''}</td>
         <td class="mono">${p.gamesPlayed}</td>
+        <td class="mono">${p.completedParticipated}</td>
         <td class="mono">${p.wins}</td>
         <td class="mono">${p.winRate!==null?fmtPct(p.winRate):'—'}</td>
       </tr>`).join('');
