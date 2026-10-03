@@ -182,16 +182,8 @@
     background:var(--surface-1);border:1px solid var(--border);border-radius:14px;padding:22px 20px;
   }
   .spotlight-name{font-family:var(--font-display);font-weight:700;font-size:clamp(32px,9vw,52px);color:var(--status-critical);line-height:1;}
-  .spotlight-name.gold{color:var(--accent-gold);}
   .spotlight-stat{font-size:15px;color:var(--text-secondary);}
   .spotlight-stat b{color:var(--text-primary);font-family:var(--font-mono);}
-
-  .plaque{
-    align-self:center;margin-top:4px;padding:10px 26px;
-    border-top:1px solid var(--accent-gold);border-bottom:1px solid var(--accent-gold);
-    font-family:var(--font-display);font-weight:700;font-size:15px;
-    letter-spacing:0.18em;text-transform:uppercase;color:var(--accent-gold);
-  }
 
   table.simple{width:100%;border-collapse:collapse;font-size:13px;}
   table.simple th{
@@ -265,20 +257,12 @@
           <div class="kpi-tile"><div class="kpi-value" id="k-avg">–</div><div class="kpi-label">Average players / game</div></div>
           <div class="kpi-tile"><div class="kpi-value" id="k-hrsperplayer">–</div><div class="kpi-label">Avg hours / player</div></div>
         </div>
-        <p class="slide-sub" style="margin-top:auto;color:var(--text-muted);font-size:13px;">Use the arrows below, the dots, swipe, or ← → to move through the records.</p>
-      </section>
-
-      <!-- FEATURE: IMPERIAL ELIAS -->
-      <section class="slide">
-        <div class="kicker" data-kicker></div>
-        <h2 class="slide-title">Imperial Elias</h2>
-        <p class="slide-sub">The newest name on the trophy.</p>
-        <div class="spotlight">
-          <div class="spotlight-name gold">Elias</div>
+        <div class="callout good" style="display:flex;flex-direction:column;gap:6px;">
+          <div style="font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--accent-gold);">Imperial Elias</div>
           <div class="spotlight-stat" id="feat-stat">–</div>
+          <p style="margin:0;font-size:13px;color:var(--text-secondary);">He spent the early game dead last in speaker order more than once — but leaned hard on Imperial anyway, building a lead before the rest of the table could catch up. It's his second straight win piloting Mahact Gene-Sorcerers, and he's still unbeaten with them.</p>
         </div>
-        <p class="slide-sub" style="max-width:62ch;">He spent the early game dead last in speaker order several times in a row. Leaning hard on Imperials, he turned it into a lead before the rest of the table could catch up. This is his second win piloting the Mahact Gene-Sorcerers, and he's yet to lose with them.</p>
-        <div class="plaque">"Imperial Elias"</div>
+        <p class="slide-sub" style="margin-top:auto;color:var(--text-muted);font-size:13px;">Use the arrows below, the dots, swipe, or ← → to move through the records.</p>
       </section>
 
       <!-- 2. STANDINGS -->
