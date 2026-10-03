@@ -27,6 +27,7 @@
     --accent-violet:#4a3aa7;
     --series-blue:#2a78d6;
     --series-orange:#eb6834;
+    --series-green:#008300;
     --status-good:#0ca30c;
     --status-critical:#d03b3b;
     --font-display:'Rajdhani',system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -337,15 +338,24 @@
         <div class="callout" id="s8-fact"></div>
       </section>
 
-      <!-- 9. SESSION LOG -->
+      <!-- 9. GAME LENGTH -->
+      <section class="slide">
+        <div class="kicker" data-kicker></div>
+        <h2 class="slide-title">How Long Did It Take?</h2>
+        <p class="slide-sub" id="s9-sub">Session length, for the games we started timing.</p>
+        <div class="bars" id="s9-chart"></div>
+        <div class="callout" id="s9-fact"></div>
+      </section>
+
+      <!-- 10. SESSION LOG -->
       <section class="slide">
         <div class="kicker" data-kicker></div>
         <h2 class="slide-title">Session Log</h2>
         <p class="slide-sub">The full record, for reference — join codes and drafts where we kept them.</p>
         <div class="table-scroll"><div class="card">
           <table class="simple">
-            <thead><tr><th>#</th><th>Players</th><th>Ruleset</th><th>Winner</th><th>Code</th><th>Draft</th></tr></thead>
-            <tbody id="s9-table"></tbody>
+            <thead><tr><th>#</th><th>Players</th><th>Ruleset</th><th>Winner</th><th>Code</th><th>Draft</th><th>Length</th></tr></thead>
+            <tbody id="s10-table"></tbody>
           </table>
         </div></div>
       </section>
@@ -408,9 +418,9 @@
     {id:3, playerCount:5, expansions:['base','pok','codex1','codex2'], status:'completed', winner:'Axel', winnerFaction:'xxcha', code:null, draftUrl:null},
     {id:4, playerCount:7, expansions:['base','pok','codex1','codex2'], status:'completed', winner:'Axel', winnerFaction:'l1z1x', code:null, draftUrl:'https://tidraft.com/draft/pressure-visz-rickar'},
     {id:5, playerCount:6, expansions:['base','pok','codex1','codex2','codex3'], status:'completed', winner:'Axel', winnerFaction:'yin', code:'unknown', draftUrl:'https://tidraft.com/draft/dimensional-insider-taivra'},
-    {id:6, playerCount:7, expansions:['base','pok','thunders_edge'], status:'completed', winner:'Martin', winnerFaction:'hacan', code:'XP48XM', draftUrl:'https://tidraft.com/draft/information-partial-judicial'},
-    {id:7, playerCount:5, expansions:['base','pok','thunders_edge'], status:'completed', winner:'Martin', winnerFaction:'titans', code:'PPB5RV', draftUrl:'https://tidraft.com/draft/expand-xander-acidos'},
-    {id:8, playerCount:8, expansions:['base','pok','thunders_edge'], status:'in_progress', winner:null, winnerFaction:null, code:'AAX7X8', draftUrl:'https://tidraft.com/draft/against-norr-effort'},
+    {id:6, playerCount:7, expansions:['base','pok','thunders_edge'], status:'completed', winner:'Martin', winnerFaction:'hacan', code:'XP48XM', draftUrl:'https://tidraft.com/draft/information-partial-judicial', durationHours:13},
+    {id:7, playerCount:5, expansions:['base','pok','thunders_edge'], status:'completed', winner:'Martin', winnerFaction:'titans', code:'PPB5RV', draftUrl:'https://tidraft.com/draft/expand-xander-acidos', durationHours:9},
+    {id:8, playerCount:8, expansions:['base','pok','thunders_edge'], status:'completed', winner:'Elias', winnerFaction:'mahact', code:'TCGRMP', draftUrl:'https://tidraft.com/draft/against-norr-effort', durationHours:11},
   ];
 
   const PICKS = [
@@ -457,14 +467,14 @@
     {game:7,player:'Magnus',faction:'jolnar',isWinner:false},
     {game:7,player:'Siri',faction:'argent',isWinner:false},
     {game:7,player:'Fabian',faction:'sardakk',isWinner:false},
-    {game:8,player:'Axel',faction:'ralnel',isWinner:null},
-    {game:8,player:'Martin',faction:'sol',isWinner:null},
-    {game:8,player:'Elias',faction:'mahact',isWinner:null},
-    {game:8,player:'Magnus',faction:'nekro',isWinner:null},
-    {game:8,player:'Siri',faction:'empyrean',isWinner:null},
-    {game:8,player:'Amund',faction:'firmament',isWinner:null},
-    {game:8,player:'Fabian',faction:'muaat',isWinner:null},
-    {game:8,player:'Arnold',faction:'nomad',isWinner:null},
+    {game:8,player:'Axel',faction:'ralnel',isWinner:false},
+    {game:8,player:'Martin',faction:'sol',isWinner:false},
+    {game:8,player:'Elias',faction:'mahact',isWinner:true},
+    {game:8,player:'Magnus',faction:'nekro',isWinner:false},
+    {game:8,player:'Siri',faction:'empyrean',isWinner:false},
+    {game:8,player:'Amund',faction:'firmament',isWinner:false},
+    {game:8,player:'Fabian',faction:'muaat',isWinner:false},
+    {game:8,player:'Arnold',faction:'nomad',isWinner:false},
   ];
 
   const ERA_LABELS = {
@@ -585,9 +595,33 @@
       winClass: p.wins>0,
     })), '--series-blue', {max: Math.max(...playerStats.map(p=>p.wins),1)});
 
-    document.getElementById('s2-fact').innerHTML = allWinnersDistinct
-      ? `<b>Zero repeat champions.</b> All ${completedGames.length} decided games have been won by ${completedGames.length} different factions — ${completedGames.map(g=>factionById[g.winnerFaction].name).join(', ')}.`
-      : `<b>${completedGames.length} games decided so far.</b>`;
+    if(allWinnersDistinct){
+      document.getElementById('s2-fact').innerHTML = `<b>Zero repeat champions.</b> All ${completedGames.length} decided games have been won by ${completedGames.length} different factions — ${completedGames.map(g=>factionById[g.winnerFaction].name).join(', ')}.`;
+    } else {
+      const winTally = {};
+      const winPilots = {};
+      completedGames.forEach(g=>{
+        winTally[g.winnerFaction] = (winTally[g.winnerFaction]||0)+1;
+        winPilots[g.winnerFaction] = winPilots[g.winnerFaction]||[];
+        winPilots[g.winnerFaction].push(g.winner);
+      });
+      const repeats = Object.entries(winTally).filter(([,c])=>c>1);
+      const sentences = repeats.map(([fid,c])=>{
+        const pilots = winPilots[fid];
+        const samePilot = pilots.every(p=>p===pilots[0]);
+        const pilotPhrase = samePilot ? `every time by ${pilots[0]}` : `by ${[...new Set(pilots)].join(' and ')}`;
+        const countPhrase = c===2 ? 'twice' : `${c} times`;
+        return `<b>${factionById[fid].name}</b> has won ${countPhrase} — ${pilotPhrase}`;
+      });
+      let factHtml;
+      if(sentences.length){
+        const pluralSuffix = repeats.length>1 ? 's' : '';
+        factHtml = `${sentences.join('; ')}. The only faction${pluralSuffix} to repeat as champion, out of ${completedGames.length} decided games.`;
+      } else {
+        factHtml = `<b>${completedGames.length} games decided so far.</b>`;
+      }
+      document.getElementById('s2-fact').innerHTML = factHtml;
+    }
   }
 
   // ---------------------------------------------------------------
@@ -694,15 +728,49 @@
     const te = eraRecord(l=>l==="Thunder's Edge");
     let facts = [];
     if(pok.topName) facts.push(`<b>${esc(pok.topName)}</b> ruled the Prophecy of Kings years (${pok.topWins} of ${pok.total} titles)`);
-    if(te.topName) facts.push(`<b>${esc(te.topName)}</b> has swept Thunder's Edge so far (${te.topWins} of ${te.total})`);
+    if(te.topName){
+      const teVerb = te.topWins === te.total ? 'has swept' : 'leads';
+      facts.push(`<b>${esc(te.topName)}</b> ${teVerb} Thunder's Edge so far (${te.topWins} of ${te.total})`);
+    }
     document.getElementById('s8-fact').innerHTML = facts.join(' — ') + '.';
   }
 
   // ---------------------------------------------------------------
-  // SLIDE 9 — SESSION LOG
+  // SLIDE 9 — GAME LENGTH
   // ---------------------------------------------------------------
   {
-    document.getElementById('s9-table').innerHTML = GAMES.map(g=>{
+    const timedGames = GAMES.filter(g=>g.durationHours!=null).sort((a,b)=>a.id-b.id);
+    if(timedGames.length){
+      document.getElementById('s9-sub').textContent = `Session length for ${timedGames.length} of ${totalGames} games — we only started the clock from Game ${timedGames[0].id}.`;
+      barRows(document.getElementById('s9-chart'), timedGames.map(g=>({
+        label:`Game ${g.id}`,
+        sub: `${g.playerCount} players · ${g.winner ? 'won by '+g.winner : 'undecided'}`,
+        value:g.durationHours,
+        valueLabel:g.durationHours+'h',
+      })), '--series-green', {max: Math.max(...timedGames.map(g=>g.durationHours))});
+
+      const avgHours = timedGames.reduce((s,g)=>s+g.durationHours,0)/timedGames.length;
+      const byPace = [...timedGames].sort((a,b)=> (a.durationHours/a.playerCount) - (b.durationHours/b.playerCount));
+      const fastest = byPace[0];
+      const slowest = byPace[byPace.length-1];
+      let paceFact = '';
+      if(timedGames.length>1 && fastest.id!==slowest.id){
+        const fastestPace = (fastest.durationHours/fastest.playerCount).toFixed(1);
+        const slowestPace = (slowest.durationHours/slowest.playerCount).toFixed(1);
+        paceFact = ` Per player, Game ${fastest.id} moved fastest (${fastestPace}h/player, ${fastest.playerCount} players) and Game ${slowest.id} dragged the most (${slowestPace}h/player, ${slowest.playerCount} players).`;
+      }
+      document.getElementById('s9-fact').innerHTML = `<b>Average session: ${(Math.round(avgHours*10)/10)}h.</b>${paceFact}`;
+    } else {
+      document.getElementById('s9-sub').textContent = 'No timed games logged yet.';
+      document.getElementById('s9-fact').innerHTML = 'Start a stopwatch next session to fill this in.';
+    }
+  }
+
+  // ---------------------------------------------------------------
+  // SLIDE 10 — SESSION LOG
+  // ---------------------------------------------------------------
+  {
+    document.getElementById('s10-table').innerHTML = GAMES.map(g=>{
       const winner = g.winner ? `${esc(g.winner)} <span class="mono" style="color:var(--text-muted);">(${esc(factionById[g.winnerFaction].name)})</span>` :
         (g.status==='in_progress' ? '<span class="mono">in progress</span>' : '<span class="mono">undecided</span>');
       let code;
@@ -714,6 +782,7 @@
         code = `<a class="link mono" href="https://ti4-companion-deploy.vercel.app/g/${esc(g.code)}" target="_blank" rel="noopener">${esc(g.code)}</a>`;
       }
       const draft = g.draftUrl ? `<a class="link" href="${esc(g.draftUrl)}" target="_blank" rel="noopener">draft ↗</a>` : '<span style="color:var(--text-muted);">—</span>';
+      const length = g.durationHours!=null ? `<span class="mono">${g.durationHours}h</span>` : '<span class="mono" style="color:var(--text-muted);">—</span>';
       return `<tr>
         <td class="strong mono">${g.id}</td>
         <td class="mono">${g.playerCount}</td>
@@ -721,6 +790,7 @@
         <td>${winner}</td>
         <td>${code}</td>
         <td>${draft}</td>
+        <td>${length}</td>
       </tr>`;
     }).join('');
   }
