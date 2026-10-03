@@ -262,6 +262,10 @@
           <div class="spotlight-stat" id="feat-stat">–</div>
           <p style="margin:0;font-size:13px;color:var(--text-secondary);">He spent the early game dead last in speaker order more than once — but leaned hard on Imperial anyway, building a lead before the rest of the table could catch up. It's his second straight win piloting Mahact Gene-Sorcerers, and he's still unbeaten with them.</p>
         </div>
+        <div class="callout" style="display:flex;flex-direction:column;gap:6px;">
+          <div style="font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--accent-gold);">Base Game Loyalty</div>
+          <p id="feat2-stat" style="margin:0;font-size:13px;color:var(--text-secondary);">–</p>
+        </div>
         <p class="slide-sub" style="margin-top:auto;color:var(--text-muted);font-size:13px;">Use the arrows below, the dots, swipe, or ← → to move through the records.</p>
       </section>
 
@@ -543,6 +547,13 @@
   const factionsPlayed = FACTIONS.filter(f=>factionCounts[f.id]).map(f=>({...f,count:factionCounts[f.id]}));
   const factionsNeverPlayed = FACTIONS.filter(f=>!factionCounts[f.id]);
 
+  // How much of every pick ever made is still a plain Base Game faction, regardless
+  // of which ruleset that game was played under.
+  const picksByOrigin = {};
+  PICKS.forEach(p=>{ const exp = factionById[p.faction].expansion; picksByOrigin[exp] = (picksByOrigin[exp]||0)+1; });
+  const baseOriginCount = picksByOrigin.base || 0;
+  const nonBaseOriginCount = PICKS.length - baseOriginCount;
+
   const bigThree = playerStats.filter(p=>p.gamesPlayed===totalGames).sort((a,b)=>a.name.localeCompare(b.name));
   const ghosts = playerStats.filter(p=>(totalGames-p.lastGame)>=3).sort((a,b)=>a.lastGame-b.lastGame);
 
@@ -636,6 +647,17 @@
       const recordPhrase = rec && rec.plays>1 ? ` (${rec.wins}-${rec.plays-rec.wins} with the faction overall)` : '';
       document.getElementById('feat-stat').innerHTML = `Game ${latestTrophyWin.id} winner — ${firstTimePhrase}, piloting <b>${faction.name}</b>${recordPhrase}.`;
     }
+  }
+
+  // ---------------------------------------------------------------
+  // FEATURE — BASE GAME LOYALTY
+  // ---------------------------------------------------------------
+  {
+    const pct = fmtPct(baseOriginCount / PICKS.length);
+    const dominancePhrase = baseOriginCount > nonBaseOriginCount
+      ? ' — more than every Prophecy of Kings, Codex, and Thunder’s Edge faction combined'
+      : '';
+    document.getElementById('feat2-stat').innerHTML = `<b>${baseOriginCount} of ${PICKS.length} picks (${pct})</b> have been plain Base Game factions${dominancePhrase}, even though newer content has been on the table since Game 2.`;
   }
 
   // ---------------------------------------------------------------
